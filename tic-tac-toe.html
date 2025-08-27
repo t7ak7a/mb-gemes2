@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>〇×ゲーム</title>
+<style>
+  body {
+    font-family: "Segoe UI", sans-serif;
+    text-align: center;
+    background: linear-gradient(135deg, #74ebd5, #ACB6E5);
+    margin: 0; padding: 0;
+    height: 100vh;
+    display: flex; flex-direction: column;
+    justify-content: center; align-items: center;
+  }
+  h1 {
+    margin: 10px 0;
+    color: #333;
+    text-shadow: 1px 1px 2px #fff;
+  }
+  #board {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(80px, 100px));
+    grid-template-rows: repeat(3, minmax(80px, 100px));
+    gap: 8px;
+    justify-content: center;
+    margin: 20px auto;
+  }
+  .cell {
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.2);
+    font-size: 2.5em; font-weight: bold;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    transition: transform 0.15s ease, background 0.3s ease;
+  }
+  .cell:hover {
+    transform: scale(1.05);
+    background: #f0f8ff;
+  }
+  .cell.taken { cursor: not-allowed; }
+  #message {
+    font-size: 1.2em;
+    margin-top: 10px;
+    color: #222;
+  }
+  .controls {
+    margin-top: 15px;
+  }
+  button, select {
+    margin: 5px;
+    padding: 8px 15px;
+    font-size: 1em;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    background: #4CAF50;
+    color: white;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  }
+  button:hover, select:hover {
+    background: #45a049;
+  }
+  @media (max-width: 480px) {
+    #board {
+      grid-template-columns: repeat(3, 80px);
+      grid-template-rows: repeat(3, 80px);
+      gap: 6px;
+    }
+    .cell {
+      font-size: 2em;
+    }
+  }
+</style>
+</head>
+<body>
+  <h1>〇×ゲーム</h1>
+  <div>
+    <label for="mode">対戦モード：</label>
+    <select id="mode">
+      <option value="2p">プレイヤー同士</option>
+      <option value="cpu-easy">CPU（かんたん）</option>
+      <option value="cpu-hard">CPU（つよい）</option>
+    </select>
+  </div>
+  <div id="board"></div>
+  <div id="message">プレイヤー ○ の番です</div>
+  <div class="controls">
+    <button onclick="resetGame()">リセット</button>
+  </div>
+
+<script>
+  const board = document.getElementById("board");
+  const message = document.getElementById("message");
+  const modeSelect = document.getElementById("mode");
+  let cells = [];
+  let currentPlayer = "○";
+  let gameOver = false;
+
+  function createBoard() {
+    board.innerHTML = "";
+    cells = [];
+    for (let i = 0; i < 9; i++) {
+      const cell = document.createElement("div");
+      cell.classList.add("cell");
+      cell.addEventListener("click", () => handleClick(i));
+      board.appendChild(cell);
+      cells.push(cell);
+    }
+    currentPlayer = "○";
+    gameOver = false;
+    message.textContent = "プレイヤー ○ の番です";
+  }
+
+  function handleClick(i) {
+    if (gameOver || cells[i].textContent !== "") return;
+    cells[i].textContent = currentPlayer;
+    cells[i].classList.add("taken");
+
+    if (checkWinner(currentPlayer)) {
+      message.textContent = `プレイヤー ${currentPlayer} の勝ち！ 🎉`;
+      gameOver = true;
+      return;
+    }
+
+    if (cells.every(c => c.textContent !== "")) {
+      message.textContent = "引き分けです。";
+      gameOver = true;
+      return;
+    }
+
+    if (modeSelect.value.startsWith("cpu") && currentPlayer === "○") {
+      // 人間が○ → 次はCPU
+      currentPlayer = "×";
+      setTimeout(cpuMove, 500);
+    } else {
+      currentPlayer = currentPlayer === "○" ? "×" : "○";
+      message.textContent = `プレイヤー ${currentPlayer} の番です`;
+    }
+  }
+
+  function cpuMove() {
+    if (gameOver) return;
+    let move;
+    if (modeSelect.value === "cpu-easy") {
+      // ランダム
+      const available = cells.map((c,i)=>c.textContent===""?i:null).filter(i=>i!==null);
+      move = available[Math.floor(Math.random()*available.length)];
+    } else {
+      // ミニマックス
+      move = bestMove();
+    }
+    cells[move].textContent = "×";
+    cells[move].classList.add("taken");
+
+    if (checkWinner("×")) {
+      message.textContent = "CPU（×）の勝ち！ 🤖";
+      gameOver = true;
+      return;
+    }
+    if (cells.every(c => c.textContent !== "")) {
+      message.textContent = "引き分けです。";
+      gameOver = true;
+      return;
+    }
+    currentPlayer = "○";
+    message.textContent = "プレイヤー ○ の番です";
+  }
+
+  function checkWinner(player) {
+    const winPatterns = [
+      [0,1,2], [3,4,5], [6,7,8],
+      [0,3,6], [1,4,7], [2,5,8],
+      [0,4,8], [2,4,6]
+    ];
+    return winPatterns.some(pattern =>
+      pattern.every(idx => cells[idx].textContent === player)
+    );
+  }
+
+  function bestMove() {
+    // ミニマックスアルゴリズム
+    let bestScore = -Infinity;
+    let move;
+    for (let i = 0; i < 9; i++) {
+      if (cells[i].textContent === "") {
+        cells[i].textContent = "×";
+        let score = minimax(cells, 0, false);
+        cells[i].textContent = "";
+        if (score > bestScore) {
+          bestScore = score;
+          move = i;
+        }
+      }
+    }
+    return move;
+  }
+
+  function minimax(boardCells, depth, isMaximizing) {
+    if (checkWinner("×")) return 10 - depth;
+    if (checkWinner("○")) return depth - 10;
+    if (boardCells.every(c => c.textContent !== "")) return 0;
+
+    if (isMaximizing) {
+      let bestScore = -Infinity;
+      for (let i = 0; i < 9; i++) {
+        if (boardCells[i].textContent === "") {
+          boardCells[i].textContent = "×";
+          let score = minimax(boardCells, depth+1, false);
+          boardCells[i].textContent = "";
+          bestScore = Math.max(score, bestScore);
+        }
+      }
+      return bestScore;
+    } else {
+      let bestScore = Infinity;
+      for (let i = 0; i < 9; i++) {
+        if (boardCells[i].textContent === "") {
+          boardCells[i].textContent = "○";
+          let score = minimax(boardCells, depth+1, true);
+          boardCells[i].textContent = "";
+          bestScore = Math.min(score, bestScore);
+        }
+      }
+      return bestScore;
+    }
+  }
+
+  function resetGame() {
+    createBoard();
+  }
+
+  createBoard();
+</script>
+</body>
+</html>
