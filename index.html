@@ -1,13 +1,13 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ja">
 <head>
-<meta charset="UTF-8">
+<meta charset="utf-8">
 <title>〇×ゲーム</title>
 <style>
   body {
-    font-family: "Segoe UI", sans-serif;
+    font-family: "segoe ui", sans-serif;
     text-align: center;
-    background: linear-gradient(135deg, #74ebd5, #ACB6E5);
+    background: linear-gradient(135deg, #74ebd5, #acb6e5);
     margin: 0; padding: 0;
     height: 100vh;
     display: flex; flex-direction: column;
@@ -20,8 +20,9 @@
   }
   #board {
     display: grid;
-    grid-template-columns: repeat(3, minmax(80px, 100px));
-    grid-template-rows: repeat(3, minmax(80px, 100px));
+    /* 変更：セルの最小値と最大値を大きく */
+    grid-template-columns: repeat(3, minmax(100px, 125px));
+    grid-template-rows: repeat(3, minmax(100px, 125px));
     gap: 8px;
     justify-content: center;
     margin: 20px auto;
@@ -30,7 +31,8 @@
     background: #fff;
     border-radius: 10px;
     box-shadow: 0 3px 6px rgba(0,0,0,0.2);
-    font-size: 2.5em; font-weight: bold;
+    /* 変更：フォントサイズを大きく */
+    font-size: 3.2em; font-weight: bold;
     display: flex; align-items: center; justify-content: center;
     cursor: pointer;
     transition: transform 0.15s ease, background 0.3s ease;
@@ -55,21 +57,22 @@
     border-radius: 6px;
     border: none;
     cursor: pointer;
-    background: #4CAF50;
+    background: #4caf50;
     color: white;
     box-shadow: 0 2px 4px rgba(0,0,0,0.2);
   }
   button:hover, select:hover {
     background: #45a049;
   }
+  /* メディアクエリも新しいサイズに合わせて調整 */
   @media (max-width: 480px) {
     #board {
-      grid-template-columns: repeat(3, 80px);
-      grid-template-rows: repeat(3, 80px);
+      grid-template-columns: repeat(3, 90px);
+      grid-template-rows: repeat(3, 90px);
       gap: 6px;
     }
     .cell {
-      font-size: 2em;
+      font-size: 2.5em; /* 小画面でも少し大きく */
     }
   }
 </style>
@@ -80,86 +83,86 @@
     <label for="mode">対戦モード：</label>
     <select id="mode">
       <option value="2p">プレイヤー同士</option>
-      <option value="cpu-easy">CPU（かんたん）</option>
-      <option value="cpu-hard">CPU（つよい）</option>
+      <option value="cpu-easy">cpu（かんたん）</option>
+      <option value="cpu-hard">cpu（つよい）</option>
     </select>
   </div>
   <div id="board"></div>
   <div id="message">プレイヤー ○ の番です</div>
   <div class="controls">
-    <button onclick="resetGame()">リセット</button>
+    <button onclick="resetgame()">リセット</button>
   </div>
 
 <script>
   const board = document.getElementById("board");
   const message = document.getElementById("message");
-  const modeSelect = document.getElementById("mode");
+  const modeSelect = document.getElementById("mode"); // 'modeselect'から'modeSelect'に変更
   let cells = [];
-  let currentPlayer = "○";
-  let gameOver = false;
+  let currentPlayer = "○"; // 'currentplayer'から'currentPlayer'に変更
+  let gameOver = false; // 'gameover'から'gameOver'に変更
 
-  function createBoard() {
+  function createBoard() { // 'createboard'から'createBoard'に変更
     board.innerHTML = "";
     cells = [];
     for (let i = 0; i < 9; i++) {
       const cell = document.createElement("div");
       cell.classList.add("cell");
-      cell.addEventListener("click", () => handleClick(i));
-      board.appendChild(cell);
+      cell.addEventListener("click", () => handleClick(i)); // 'handleclick'から'handleClick'に変更
+      board.appendChild(cell); // 'appendchild'から'appendChild'に変更
       cells.push(cell);
     }
     currentPlayer = "○";
     gameOver = false;
-    message.textContent = "プレイヤー ○ の番です";
+    message.textContent = "プレイヤー ○ の番です"; // 'textcontent'から'textContent'に変更
   }
 
-  function handleClick(i) {
-    if (gameOver || cells[i].textContent !== "") return;
-    cells[i].textContent = currentPlayer;
+  function handleClick(i) { // 'handleclick'から'handleClick'に変更
+    if (gameOver || cells[i].textContent !== "") return; // 'textcontent'から'textContent'に変更
+    cells[i].textContent = currentPlayer; // 'textcontent'から'textContent'に変更
     cells[i].classList.add("taken");
 
-    if (checkWinner(currentPlayer)) {
+    if (checkWinner(currentPlayer)) { // 'checkwinner'から'checkWinner'に変更
       message.textContent = `プレイヤー ${currentPlayer} の勝ち！ 🎉`;
       gameOver = true;
       return;
     }
 
-    if (cells.every(c => c.textContent !== "")) {
+    if (cells.every(c => c.textContent !== "")) { // 'textcontent'から'textContent'に変更
       message.textContent = "引き分けです。";
       gameOver = true;
       return;
     }
 
-    if (modeSelect.value.startsWith("cpu") && currentPlayer === "○") {
-      // 人間が○ → 次はCPU
+    if (modeSelect.value.startsWith("cpu") && currentPlayer === "○") { // 'modeselect'から'modeSelect'に変更
+      // 人間が○ → 次はcpu
       currentPlayer = "×";
-      setTimeout(cpuMove, 500);
+      setTimeout(cpuMove, 500); // 'settimeout'から'setTimeout'、'cpumove'から'cpuMove'に変更
     } else {
       currentPlayer = currentPlayer === "○" ? "×" : "○";
       message.textContent = `プレイヤー ${currentPlayer} の番です`;
     }
   }
 
-  function cpuMove() {
+  function cpuMove() { // 'cpumove'から'cpuMove'に変更
     if (gameOver) return;
     let move;
-    if (modeSelect.value === "cpu-easy") {
+    if (modeSelect.value === "cpu-easy") { // 'modeselect'から'modeSelect'に変更
       // ランダム
-      const available = cells.map((c,i)=>c.textContent===""?i:null).filter(i=>i!==null);
-      move = available[Math.floor(Math.random()*available.length)];
+      const available = cells.map((c,i)=>c.textContent===""?i:null).filter(i=>i!==null); // 'textcontent'から'textContent'に変更
+      move = available[Math.floor(Math.random()*available.length)]; // 'math'から'Math'に変更
     } else {
       // ミニマックス
-      move = bestMove();
+      move = bestMove(); // 'bestmove'から'bestMove'に変更
     }
-    cells[move].textContent = "×";
+    cells[move].textContent = "×"; // 'textcontent'から'textContent'に変更
     cells[move].classList.add("taken");
 
-    if (checkWinner("×")) {
-      message.textContent = "CPU（×）の勝ち！ 🤖";
+    if (checkWinner("×")) { // 'checkwinner'から'checkWinner'に変更
+      message.textContent = "cpu（×）の勝ち！ 🤖";
       gameOver = true;
       return;
     }
-    if (cells.every(c => c.textContent !== "")) {
+    if (cells.every(c => c.textContent !== "")) { // 'textcontent'から'textContent'に変更
       message.textContent = "引き分けです。";
       gameOver = true;
       return;
@@ -168,28 +171,28 @@
     message.textContent = "プレイヤー ○ の番です";
   }
 
-  function checkWinner(player) {
-    const winPatterns = [
+  function checkWinner(player) { // 'checkwinner'から'checkWinner'に変更
+    const winPatterns = [ // 'winpatterns'から'winPatterns'に変更
       [0,1,2], [3,4,5], [6,7,8],
       [0,3,6], [1,4,7], [2,5,8],
       [0,4,8], [2,4,6]
     ];
-    return winPatterns.some(pattern =>
-      pattern.every(idx => cells[idx].textContent === player)
+    return winPatterns.some(pattern => // 'winpatterns'から'winPatterns'に変更
+      pattern.every(idx => cells[idx].textContent === player) // 'textcontent'から'textContent'に変更
     );
   }
 
-  function bestMove() {
+  function bestMove() { // 'bestmove'から'bestMove'に変更
     // ミニマックスアルゴリズム
-    let bestScore = -Infinity;
+    let bestScore = -Infinity; // 'bestscore'から'bestScore'、'infinity'から'Infinity'に変更
     let move;
     for (let i = 0; i < 9; i++) {
-      if (cells[i].textContent === "") {
-        cells[i].textContent = "×";
+      if (cells[i].textContent === "") { // 'textcontent'から'textContent'に変更
+        cells[i].textContent = "×"; // 'textcontent'から'textContent'に変更
         let score = minimax(cells, 0, false);
-        cells[i].textContent = "";
-        if (score > bestScore) {
-          bestScore = score;
+        cells[i].textContent = ""; // 'textcontent'から'textContent'に変更
+        if (score > bestScore) { // 'bestscore'から'bestScore'に変更
+          bestScore = score; // 'bestscore'から'bestScore'に変更
           move = i;
         }
       }
@@ -197,41 +200,27 @@
     return move;
   }
 
-  function minimax(boardCells, depth, isMaximizing) {
-    if (checkWinner("×")) return 10 - depth;
-    if (checkWinner("○")) return depth - 10;
-    if (boardCells.every(c => c.textContent !== "")) return 0;
+  function minimax(boardCells, depth, isMaximizing) { // 'boardcells'から'boardCells'、'ismaximizing'から'isMaximizing'に変更
+    if (checkWinner("×")) return 10 - depth; // 'checkwinner'から'checkWinner'に変更
+    if (checkWinner("○")) return depth - 10; // 'checkwinner'から'checkWinner'に変更
+    if (boardCells.every(c => c.textContent !== "")) return 0; // 'textcontent'から'textContent'に変更
 
     if (isMaximizing) {
-      let bestScore = -Infinity;
+      let bestScore = -Infinity; // 'bestscore'から'bestScore'、'infinity'から'Infinity'に変更
       for (let i = 0; i < 9; i++) {
-        if (boardCells[i].textContent === "") {
-          boardCells[i].textContent = "×";
+        if (boardCells[i].textContent === "") { // 'textcontent'から'textContent'に変更
+          boardCells[i].textContent = "×"; // 'textcontent'から'textContent'に変更
           let score = minimax(boardCells, depth+1, false);
-          boardCells[i].textContent = "";
-          bestScore = Math.max(score, bestScore);
+          boardCells[i].textContent = ""; // 'textcontent'から'textContent'に変更
+          bestScore = Math.max(score, bestScore); // 'math'から'Math'、'bestscore'から'bestScore'に変更
         }
       }
       return bestScore;
     } else {
-      let bestScore = Infinity;
+      let bestScore = Infinity; // 'bestscore'から'bestScore'、'infinity'から'Infinity'に変更
       for (let i = 0; i < 9; i++) {
-        if (boardCells[i].textContent === "") {
-          boardCells[i].textContent = "○";
-          let score = minimax(boardCells, depth+1, true);
-          boardCells[i].textContent = "";
-          bestScore = Math.min(score, bestScore);
-        }
-      }
-      return bestScore;
-    }
-  }
+        if (boardCells[i].textContent === "") { // 'textcontent'から'textContent'に変更
+          boardCells[i].textContent = "○"; // 'textcontent'から'textContent'に変更
+          let score = minimax(boardCells, depth
 
-  function resetGame() {
-    createBoard();
-  }
-
-  createBoard();
-</script>
-</body>
-</html>
+                              
